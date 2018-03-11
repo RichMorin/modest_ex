@@ -115,11 +115,11 @@ int main(int argc, const char * argv[])
     
     /* print html svg */
     printf("\n<svg width=\"%f\" height=\"%f\">\n", width + 4.0f, descender + 4.0f);
-    printf("\t<line x1=%f y1=%f x2=%f y2=%f style=\"stroke:rgb(0,124,110);stroke-width:1\" />\n", 0.0f, ascender, width, ascender);
-    printf("\t<line x1=%f y1=%f x2=%f y2=%f style=\"stroke:rgb(140,0,110);stroke-width:1\" />\n", 0.0f, cap_height, width, cap_height);
-    printf("\t<line x1=%f y1=%f x2=%f y2=%f style=\"stroke:rgb(140,124,110);stroke-width:1\" />\n", 0.0f, x_height, width, x_height);
-    printf("\t<line x1=%f y1=%f x2=%f y2=%f style=\"stroke:rgb(0,255,0);stroke-width:1\" />\n", 0.0f, baseline, width, baseline);
-    printf("\t<line x1=%f y1=%f x2=%f y2=%f style=\"stroke:rgb(255,0,0);stroke-width:1\" />\n", 0.0f, descender, width, descender);
+    printf("\t<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" style=\"stroke:rgb(0,124,110);stroke-width:1\" />\n", 0.0f, ascender, width, ascender);
+    printf("\t<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" style=\"stroke:rgb(140,0,110);stroke-width:1\" />\n", 0.0f, cap_height, width, cap_height);
+    printf("\t<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" style=\"stroke:rgb(140,124,110);stroke-width:1\" />\n", 0.0f, x_height, width, x_height);
+    printf("\t<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" style=\"stroke:rgb(0,255,0);stroke-width:1\" />\n", 0.0f, baseline, width, baseline);
+    printf("\t<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" style=\"stroke:rgb(255,0,0);stroke-width:1\" />\n", 0.0f, descender, width, descender);
     
     if(glyph_index < mf->table_maxp.numGlyphs) {
         myfont_table_glyph_t *glyph = &mf->table_glyf.cache[glyph_index];
@@ -142,5 +142,4 @@ int main(int argc, const char * argv[])
     
     return 0;
 }
-
 

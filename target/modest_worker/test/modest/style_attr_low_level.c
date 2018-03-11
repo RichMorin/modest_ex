@@ -132,6 +132,8 @@ int main(int argc, const char * argv[])
 {
     const char *html = "<div><div style=\"width: 13px; height: 30.4em; background-image: none, cross-fade(32% image(rgba(12, 21, 32, 0.32)), red), string(this-is-string);\"></div></div>";
     
+    // html = "<style type=\"text/css\">div {display: inline; padding: 130px 3em;}</style><div id=div1></div><div id=div2></div><div id=div3></div><div id=div4></div>";
+
     myhtml_tree_t *html_tree = parse_html(html, strlen(html));
     mycss_entry_t *css_entry = create_css_parser();
     

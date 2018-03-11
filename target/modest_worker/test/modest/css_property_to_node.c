@@ -109,6 +109,9 @@ int main(int argc, const char * argv[])
 {
     char *html = "<div id=div1></div><div id=div2></div><div id=div3></div><div id=div4></div>";
     char *css = "div {display: inline; padding: 130px 3em;}";
+
+    // html = "<style type=\"text/css\">div {display: inline; padding: 130px 3em;}</style><div id=div1></div><div id=div2></div><div id=div3></div><div id=div4></div>";
+    // css = "";
     
     /* init Modest */
     modest_t *modest = modest_create();
