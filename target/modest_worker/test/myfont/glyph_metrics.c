@@ -36,6 +36,7 @@ int main(int argc, const char * argv[])
 {
     /* set and get params */
     const char *path = "third_party/font/Arkhip.ttf";
+    path = "../test/fixtures/font/Arkhip.ttf";
     float font_size = 200.0f;
     
     size_t codepoint;

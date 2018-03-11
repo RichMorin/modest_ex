@@ -83,14 +83,15 @@ mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
 int main(int argc, const char * argv[])
 {
     const char* path;
+    path = "../test/fixtures/test_page.html";
     
-    if (argc == 2) {
-        path = argv[1];
-    }
-    else {
-        printf("Bad ARGV!\nUse: css_low_level <path_to_css_file>\n");
-        exit(EXIT_FAILURE);
-    }
+    // if (argc == 2) {
+    //     path = argv[1];
+    // }
+    // else {
+    //     printf("Bad ARGV!\nUse: css_low_level <path_to_css_file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
     struct res_data res = load_data_file(path);
     

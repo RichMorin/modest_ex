@@ -133,14 +133,15 @@ void print_tree(myhtml_tree_t* tree, myhtml_tree_node_t *node, size_t inc)
 int main(int argc, const char * argv[])
 {
     const char* path;
+    path = "../test/fixtures/test_page.html";
     
-    if (argc == 2) {
-        path = argv[1];
-    }
-    else {
-        printf("Bad ARGV!\nUse: print_tree_high_level <path_to_html_file>\n");
-        exit(EXIT_FAILURE);
-    }
+    // if (argc == 2) {
+    //     path = argv[1];
+    // }
+    // else {
+    //     printf("Bad ARGV!\nUse: print_tree_high_level <path_to_html_file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
     struct res_html res = load_html_file(path);
     

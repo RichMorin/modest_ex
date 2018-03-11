@@ -83,16 +83,18 @@ mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
 int main(int argc, const char * argv[])
 {
     const char* path;
+    path = "../test/fixtures/test_page.html";
     const char* attr_key;
-    
-    if (argc == 3) {
-        attr_key = argv[1];
-        path = argv[2];
-    }
-    else {
-        printf("Bad ARGV!\nUse: nodes_by_attr_key_high_level <attribute key> <path to html file>\n");
-        exit(EXIT_FAILURE);
-    }
+    attr_key = "name";
+
+    // if (argc == 3) {
+    //     attr_key = argv[1];
+    //     path = argv[2];
+    // }
+    // else {
+    //     printf("Bad ARGV!\nUse: nodes_by_attr_key_high_level <attribute key> <path to html file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
     struct res_html res = load_html_file(path);
     

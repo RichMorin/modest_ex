@@ -75,13 +75,15 @@ struct res_html load_html_file(const char* filename)
 
 int main(int argc, const char * argv[])
 {
-    if (argc != 2) {
-        printf("Bad ARGV!\nUse: detect_encoding_in_meta_high_level <path_to_html_file>\n");
-        exit(EXIT_FAILURE);
-    }
+    const char *path = "../test/fixtures/test_page.html";
+    // if (argc != 2) {
+    //     printf("Bad ARGV!\nUse: detect_encoding_in_meta_high_level <path_to_html_file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
-    struct res_html res = load_html_file(argv[1]);
-    
+    // struct res_html res = load_html_file(argv[1]);
+    struct res_html res = load_html_file(path);
+
     myencoding_t encoding = myencoding_prescan_stream_to_determine_encoding(res.html, res.size);
     
     if(encoding == MyENCODING_NOT_DETERMINED) {

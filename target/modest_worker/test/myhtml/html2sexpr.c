@@ -135,12 +135,15 @@ static void usage(void)
 
 int main(int argc, char** argv)
 {
-    if (argc != 2) {
-        usage();
-        DIE("Invalid number of arguments\n");   
-    }
+    const char* path = "../test/fixtures/test_page.html";
+    // if (argc != 2) {
+    //     usage();
+    //     DIE("Invalid number of arguments\n");   
+    // }
 
-    struct res_html data = load_html_file(argv[1]);
+    // struct res_html data = load_html_file(argv[1]);
+    struct res_html data = load_html_file(path);
+    
     mystatus_t res;
 
 	// basic init

@@ -179,14 +179,15 @@ void * colorize_callback_before_token_done(myhtml_tree_t* tree, myhtml_token_nod
 int main(int argc, const char * argv[])
 {
     const char* path;
+    path = "../test/fixtures/test_page.html";
     
-    if (argc == 2) {
-        path = argv[1];
-    }
-    else {
-        printf("Bad ARGV!\nUse: tokenizer_colorize_high_level <path_to_html_file>\n");
-        exit(EXIT_FAILURE);
-    }
+    // if (argc == 2) {
+    //     path = argv[1];
+    // }
+    // else {
+    //     printf("Bad ARGV!\nUse: tokenizer_colorize_high_level <path_to_html_file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
     struct res_html res = load_html_file(path);
     

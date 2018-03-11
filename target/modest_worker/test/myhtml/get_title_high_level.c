@@ -75,14 +75,15 @@ struct res_html load_html_file(const char* filename)
 int main(int argc, const char * argv[])
 {
     const char* path;
-
-    if (argc == 2) {
-        path = argv[1];
-    }
-    else {
-        printf("Bad ARGV!\nUse: get_title_high_level <path_to_html_file>\n");
-        exit(EXIT_FAILURE);
-    }
+    path = "../test/fixtures/test_page.html";
+    
+    // if (argc == 2) {
+    //     path = argv[1];
+    // }
+    // else {
+    //     printf("Bad ARGV!\nUse: get_title_high_level <path_to_html_file>\n");
+    //     exit(EXIT_FAILURE);
+    // }
     
     struct res_html res = load_html_file(path);
     
