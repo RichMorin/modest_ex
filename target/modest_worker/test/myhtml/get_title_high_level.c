@@ -67,7 +67,7 @@ struct res_html load_html_file(const char* filename)
     }
 
     fclose(fh);
-    
+
     struct res_html res = {html, (size_t)size};
     return res;
 }
@@ -80,7 +80,7 @@ int main(int argc, const char * argv[])
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: get_title_high_level <path_to_html_file>\n");
         exit(EXIT_FAILURE);
     }
     
@@ -97,18 +97,22 @@ int main(int argc, const char * argv[])
     // parse html
     myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
     
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
+    // parse html
+    myhtml_collection_t *collection = myhtml_get_nodes_by_tag_id(tree, NULL, MyHTML_TAG_TITLE, NULL);
     
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
+    if(collection && collection->list && collection->length) {
+        myhtml_tree_node_t *text_node = myhtml_node_child(collection->list[0]);
+        
+        if(text_node) {
+            const char* text = myhtml_node_text(text_node, NULL);
+            
+            if(text)
+                printf("Title: %s\n", text);
+        }
     }
     
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
-    
     // release resources
+    myhtml_collection_destroy(collection);
     myhtml_tree_destroy(tree);
     myhtml_destroy(myhtml);
     

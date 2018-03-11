@@ -31,7 +31,7 @@ mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
 
 int main(int argc, const char * argv[])
 {
-    char html[] = "<div><span>Best of Fragments</span><a>click to make happy</a></div>";
+    char html[] = "<div></div>";
     
     // basic init
     myhtml_t* myhtml = myhtml_create();
@@ -44,16 +44,39 @@ int main(int argc, const char * argv[])
     // parse html
     myhtml_parse_fragment(tree, MyENCODING_UTF_8, html, strlen(html), MyHTML_TAG_DIV, MyHTML_NAMESPACE_HTML);
     
-    // print fragment
-    myhtml_serialization_tree_callback(myhtml_tree_get_document(tree), serialization_callback, NULL);
+    // get first DIV from index
+    myhtml_collection_t *div_list = myhtml_get_nodes_by_name(tree, NULL, "div", 3, NULL);
+    myhtml_tree_node_t *node = div_list->list[0];
+    
+    // print original tree
+    printf("Original tree:\n");
+    myhtml_serialization_tree_callback(myhtml_tree_get_node_html(tree), serialization_callback, NULL);
+    
+    printf("For a test; Create and delete 100000 attrs...\n");
+    for(size_t j = 0; j < 100000; j++) {
+        myhtml_tree_attr_t *attr = myhtml_attribute_add(node, "key", 3, "value", 5, MyENCODING_UTF_8);
+        myhtml_attribute_delete(tree, node, attr);
+    }
+    
+    // add first attr in first div in tree
+    myhtml_attribute_add(node, "key", 3, "value", 5, MyENCODING_UTF_8);
+    
+    printf("Modified tree:\n");
+    myhtml_serialization_tree_callback(myhtml_tree_get_node_html(tree), serialization_callback, NULL);
+    
+    // get attr by key name
+    myhtml_tree_attr_t *gets_attr = myhtml_attribute_by_key(node, "key", 3);
+    const char *attr_char = myhtml_attribute_value(gets_attr, NULL);
+    
+    printf("Get attr by key name \"key\": %s\n", attr_char);
     
     // release resources
+    myhtml_collection_destroy(div_list);
     myhtml_tree_destroy(tree);
     myhtml_destroy(myhtml);
     
     return 0;
 }
-
 
 
 

@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <myhtml/api.h>
 
 #include "example.h"
@@ -65,22 +66,28 @@ struct res_html load_html_file(const char* filename)
         fprintf(stderr, "could not read %ld bytes (" MyCORE_FMT_Z " bytes done)\n", size, nread);
         exit(EXIT_FAILURE);
     }
-
+    
     fclose(fh);
     
     struct res_html res = {html, (size_t)size};
     return res;
 }
 
+mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
+{
+    printf("%.*s", (int)len, data);
+    return MyCORE_STATUS_OK;
+}
+
 int main(int argc, const char * argv[])
 {
     const char* path;
-
+    
     if (argc == 2) {
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: get_title_high_level <path_to_html_file>\n");
         exit(EXIT_FAILURE);
     }
     
@@ -94,29 +101,23 @@ int main(int argc, const char * argv[])
     myhtml_tree_t* tree = myhtml_tree_create();
     myhtml_tree_init(tree, myhtml);
     
+    // set parse flags
+    myhtml_tree_parse_flags_set(tree,
+                                MyHTML_TREE_PARSE_FLAGS_SKIP_WHITESPACE_TOKEN|
+                                MyHTML_TREE_PARSE_FLAGS_WITHOUT_DOCTYPE_IN_TREE);
+    
     // parse html
     myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
     
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
-    
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
+    if(myhtml_tree_get_node_html(tree))
+        myhtml_serialization_tree_callback(myhtml_tree_get_node_html(tree), serialization_callback, NULL);
     
     // release resources
     myhtml_tree_destroy(tree);
     myhtml_destroy(myhtml);
     
-    free(res.html);
-    
     return 0;
 }
-
 
 
 

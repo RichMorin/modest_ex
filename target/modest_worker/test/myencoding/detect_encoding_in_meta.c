@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015-2016 Alexander Borisov
+ Copyright (C) 2015-2017 Alexander Borisov
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <myhtml/api.h>
+
+#include <myencoding/encoding.h>
 
 #include "example.h"
 
@@ -67,50 +68,29 @@ struct res_html load_html_file(const char* filename)
     }
 
     fclose(fh);
-    
+
     struct res_html res = {html, (size_t)size};
     return res;
 }
 
 int main(int argc, const char * argv[])
 {
-    const char* path;
-
-    if (argc == 2) {
-        path = argv[1];
+    if (argc != 2) {
+        printf("Bad ARGV!\nUse: detect_encoding_in_meta_high_level <path_to_html_file>\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    struct res_html res = load_html_file(argv[1]);
+    
+    myencoding_t encoding = myencoding_prescan_stream_to_determine_encoding(res.html, res.size);
+    
+    if(encoding == MyENCODING_NOT_DETERMINED) {
+        printf("Can't detect encoding\n");
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
-        exit(EXIT_FAILURE);
+        const char *encoding_name = myencoding_name_by_id(encoding, NULL);
+        printf("Encoding: %s\n", encoding_name);
     }
-    
-    struct res_html res = load_html_file(path);
-    
-    // basic init
-    myhtml_t* myhtml = myhtml_create();
-    myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0);
-    
-    // init tree
-    myhtml_tree_t* tree = myhtml_tree_create();
-    myhtml_tree_init(tree, myhtml);
-    
-    // parse html
-    myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
-    
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
-    
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
-    
-    // release resources
-    myhtml_tree_destroy(tree);
-    myhtml_destroy(myhtml);
     
     free(res.html);
     

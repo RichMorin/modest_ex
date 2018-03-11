@@ -20,7 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <myhtml/api.h>
+
+#include <myencoding/encoding.h>
 
 #include "example.h"
 
@@ -72,48 +73,56 @@ struct res_html load_html_file(const char* filename)
     return res;
 }
 
+void print_encoding(myencoding_t encoding)
+{
+    printf("Character encoding is ");
+    
+    switch (encoding) {
+        case MyENCODING_UTF_8:          printf("UTF-8");          break;
+        case MyENCODING_UTF_16LE:       printf("UTF_16LE");       break;
+        case MyENCODING_UTF_16BE:       printf("UTF_16BE");       break;
+        case MyENCODING_KOI8_R:         printf("KOI8_R");         break;
+        case MyENCODING_WINDOWS_1251:   printf("WINDOWS_1251");   break;
+        case MyENCODING_X_MAC_CYRILLIC: printf("X_MAC_CYRILLIC"); break;
+        case MyENCODING_IBM866:         printf("IBM866");         break;
+        case MyENCODING_ISO_8859_5:     printf("ISO_8859_5");     break;
+        default:
+            printf("UNKNOWN");
+            break;
+    }
+    
+    printf("\n");
+}
+
 int main(int argc, const char * argv[])
 {
     const char* path;
-
+    
     if (argc == 2) {
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: detect_encoding_high_level <path_to_html_file>\n");
         exit(EXIT_FAILURE);
     }
     
     struct res_html res = load_html_file(path);
     
-    // basic init
-    myhtml_t* myhtml = myhtml_create();
-    myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0);
+    myencoding_t encoding;
     
-    // init tree
-    myhtml_tree_t* tree = myhtml_tree_create();
-    myhtml_tree_init(tree, myhtml);
-    
-    // parse html
-    myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
-    
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
-    
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
+    // try detect by BOM
+    if (myencoding_detect_bom(res.html, res.size, &encoding)) {
+        print_encoding(encoding);
+    } else if (myencoding_detect(res.html, res.size, &encoding)) {
+        print_encoding(encoding);
+    } else if (encoding != MyENCODING_DEFAULT) {
+        printf("It is possible that ");
+        print_encoding(encoding);
+    } else {
+        printf("I could not identify character encoding\n");
     }
-    
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
-    
-    // release resources
-    myhtml_tree_destroy(tree);
-    myhtml_destroy(myhtml);
-    
+
     free(res.html);
-    
     return 0;
 }
 

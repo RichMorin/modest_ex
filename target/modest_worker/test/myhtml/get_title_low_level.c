@@ -20,7 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <myhtml/api.h>
+#include <myhtml/myhtml.h>
+#include <myhtml/serialization.h>
 
 #include "example.h"
 
@@ -65,9 +66,9 @@ struct res_html load_html_file(const char* filename)
         fprintf(stderr, "could not read %ld bytes (" MyCORE_FMT_Z " bytes done)\n", size, nread);
         exit(EXIT_FAILURE);
     }
-
+               
     fclose(fh);
-    
+
     struct res_html res = {html, (size_t)size};
     return res;
 }
@@ -80,7 +81,7 @@ int main(int argc, const char * argv[])
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: get_title_low_level <path_to_html_file>\n");
         exit(EXIT_FAILURE);
     }
     
@@ -97,18 +98,20 @@ int main(int argc, const char * argv[])
     // parse html
     myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
     
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
+    // get title from index
+    myhtml_collection_t *titles_list = myhtml_get_nodes_by_tag_id(tree, NULL, MyHTML_TAG_TITLE, NULL);
     
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
+    if(titles_list && titles_list->length != 0 && titles_list->list[0]->child) {
+        mycore_string_raw_t str = {0};
+        myhtml_serialization_node(titles_list->list[0]->child, &str);
+        
+        printf("%s\n", str.data);
+        
+        mycore_string_raw_destroy(&str, false);
     }
     
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
-    
     // release resources
+    myhtml_collection_destroy(titles_list);
     myhtml_tree_destroy(tree);
     myhtml_destroy(myhtml);
     

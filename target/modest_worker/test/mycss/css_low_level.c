@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015-2016 Alexander Borisov
+ Copyright (C) 2016 Alexander Borisov
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -8,28 +8,30 @@
  
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  Lesser General Public License for more details.
  
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  
  Author: lex.borisov@gmail.com (Alexander Borisov)
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <myhtml/api.h>
+#include <string.h>
+
+#include <mycss/mycss.h>
 
 #include "example.h"
 
-struct res_html {
-    char  *html;
+struct res_data {
+    char  *data;
     size_t size;
 };
 
-struct res_html load_html_file(const char* filename)
+struct res_data load_data_file(const char* filename)
 {
     FILE *fh = fopen(filename, "rb");
     if(fh == NULL) {
@@ -54,69 +56,73 @@ struct res_html load_html_file(const char* filename)
         exit(EXIT_FAILURE);
     }
     
-    char *html = (char*)malloc(size + 1);
-    if(html == NULL) {
+    char *data = (char*)malloc(size + 1);
+    if(data == NULL) {
         fprintf(stderr, "Can't allocate mem for html file: %s\n", filename);
         exit(EXIT_FAILURE);
     }
     
-    size_t nread = fread(html, 1, size, fh);
+    size_t nread = fread(data, 1, size, fh);
     if (nread != size) {
         fprintf(stderr, "could not read %ld bytes (" MyCORE_FMT_Z " bytes done)\n", size, nread);
         exit(EXIT_FAILURE);
     }
-
+    
     fclose(fh);
     
-    struct res_html res = {html, (size_t)size};
+    struct res_data res = {data, (size_t)size};
     return res;
+}
+
+mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
+{
+    printf("%.*s", (int)len, data);
+    return MyCORE_STATUS_OK;
 }
 
 int main(int argc, const char * argv[])
 {
     const char* path;
-
+    
     if (argc == 2) {
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: css_low_level <path_to_css_file>\n");
         exit(EXIT_FAILURE);
     }
     
-    struct res_html res = load_html_file(path);
+    struct res_data res = load_data_file(path);
     
     // basic init
-    myhtml_t* myhtml = myhtml_create();
-    myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0);
+    mycss_t *mycss = mycss_create();
+    mystatus_t status = mycss_init(mycss);
     
-    // init tree
-    myhtml_tree_t* tree = myhtml_tree_create();
-    myhtml_tree_init(tree, myhtml);
+    // current entry work init
+    mycss_entry_t *entry = mycss_entry_create();
+    status = mycss_entry_init(mycss, entry);
     
-    // parse html
-    myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
+    // parse selectors
+    status = mycss_parse(entry, MyENCODING_UTF_8, res.data, res.size);
     
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
-    
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
+    if(status) {
+        fprintf(stderr, "Parse error!\n");
         exit(EXIT_FAILURE);
     }
     
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
+    /* print result */
+    printf("Result:\n");
+    mycss_namespace_serialization_stylesheet(&entry->stylesheet->ns_stylesheet, serialization_callback, NULL);
+    mycss_stylesheet_serialization(entry->stylesheet, serialization_callback, NULL);
+    printf("\n");
     
-    // release resources
-    myhtml_tree_destroy(tree);
-    myhtml_destroy(myhtml);
+    // destroy all
+    mycss_entry_destroy(entry, true);
+    mycss_destroy(mycss, true);
     
-    free(res.html);
+    free(res.data);
     
     return 0;
 }
-
-
 
 

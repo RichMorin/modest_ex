@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <myhtml/api.h>
 
 #include "example.h"
@@ -65,22 +66,39 @@ struct res_html load_html_file(const char* filename)
         fprintf(stderr, "could not read %ld bytes (" MyCORE_FMT_Z " bytes done)\n", size, nread);
         exit(EXIT_FAILURE);
     }
-
-    fclose(fh);
     
+    fclose(fh);
+        
     struct res_html res = {html, (size_t)size};
     return res;
 }
 
+void callback_node_insert(myhtml_tree_t* tree, myhtml_tree_node_t* node, void* ctx)
+{
+    const char *tag_name = myhtml_tag_name_by_id(tree, myhtml_node_tag_id(node), NULL);
+    const char *tag_name_parent = myhtml_tag_name_by_id(tree, myhtml_node_tag_id( myhtml_node_parent(node) ), NULL);
+    
+    printf("Insert %s to parent %s\n", tag_name, tag_name_parent);
+}
+
+void callback_node_remove(myhtml_tree_t* tree, myhtml_tree_node_t* node, void* ctx)
+{
+    const char *tag_name = myhtml_tag_name_by_id(tree, myhtml_node_tag_id(node), NULL);
+    const char *tag_name_parent = myhtml_tag_name_by_id(tree, myhtml_node_tag_id( myhtml_node_parent(node) ), NULL);
+    
+    printf("Remove %s from parent %s\n", tag_name, tag_name_parent);
+}
+
+
 int main(int argc, const char * argv[])
 {
     const char* path;
-
+    
     if (argc == 2) {
         path = argv[1];
     }
     else {
-        printf("Bad ARGV!\nUse: serialization_high_level <path_to_html_file>\n");
+        printf("Bad ARGV!\nUse: callback_tree_node_high_level <path_to_html_file>\n");
         exit(EXIT_FAILURE);
     }
     
@@ -94,19 +112,12 @@ int main(int argc, const char * argv[])
     myhtml_tree_t* tree = myhtml_tree_create();
     myhtml_tree_init(tree, myhtml);
     
+    // set callbacks
+    myhtml_callback_tree_node_insert_set(tree, callback_node_insert, NULL);
+    myhtml_callback_tree_node_remove_set(tree, callback_node_remove, NULL);
+    
     // parse html
     myhtml_parse(tree, MyENCODING_UTF_8, res.html, res.size);
-    
-    mycore_string_raw_t str_raw;
-    mycore_string_raw_clean_all(&str_raw);
-    
-    if(myhtml_serialization_tree_buffer(myhtml_tree_get_document(tree), &str_raw)) {
-        fprintf(stderr, "Could not serialization for the tree\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    printf("%s", str_raw.data);
-    mycore_string_raw_destroy(&str_raw, false);
     
     // release resources
     myhtml_tree_destroy(tree);
