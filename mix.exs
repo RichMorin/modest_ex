@@ -70,7 +70,9 @@ defmodule ModestEx.MixProject do
       # benchmarking helpers
       {:benchfella, "~> 0.3.0", only: :dev},
       # cnode helpers
-      {:nodex, "~> 0.1.1"}
+      {:nodex, "~> 0.1.1"},
+      # testing
+      {:diff, git: "https://github.com/bryanjos/diff.git", only: :test},
     ]
   end
 end

@@ -23,6 +23,56 @@
 #include <string.h>
 #include <myhtml/api.h>
 
+#include "example.h"
+
+struct res_html {
+    char  *html;
+    size_t size;
+};
+
+struct res_html load_html_file(const char* filename)
+{
+    FILE *fh = fopen(filename, "rb");
+    if(fh == NULL) {
+        fprintf(stderr, "Can't open html file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    
+    if(fseek(fh, 0L, SEEK_END) != 0) {
+        fprintf(stderr, "Can't set position (fseek) in file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    
+    long size = ftell(fh);
+    
+    if(fseek(fh, 0L, SEEK_SET) != 0) {
+        fprintf(stderr, "Can't set position (fseek) in file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    
+    if(size <= 0) {
+        fprintf(stderr, "Can't get file size or file is empty: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    
+    char *html = (char*)malloc(size + 1);
+    if(html == NULL) {
+        fprintf(stderr, "Can't allocate mem for html file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    
+    size_t nread = fread(html, 1, size, fh);
+    if (nread != size) {
+        fprintf(stderr, "could not read %ld bytes (" MyCORE_FMT_Z " bytes done)\n", size, nread);
+        exit(EXIT_FAILURE);
+    }
+    
+    fclose(fh);
+    
+    struct res_html res = {html, (size_t)size};
+    return res;
+}
+
 mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
 {
     printf("%.*s", (int)len, data);
@@ -31,8 +81,13 @@ mystatus_t serialization_callback(const char* data, size_t len, void* ctx)
 
 int main(int argc, const char * argv[])
 {
-    char html[] = "<div><span>Best of Fragments</span><a>click to make happy</a></div>";
+    // char html[] = "<div><span>Best of Fragments</span><a>click to make happy</a></div>";
     
+    const char* path;
+    path = "../test/fixtures/simple.xml";
+
+    struct res_html res = load_html_file(path);
+
     // basic init
     myhtml_t* myhtml = myhtml_create();
     myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0);
@@ -42,11 +97,14 @@ int main(int argc, const char * argv[])
     myhtml_tree_init(tree, myhtml);
     
     // parse html
-    myhtml_parse_fragment(tree, MyENCODING_UTF_8, html, strlen(html), MyHTML_TAG_DIV, MyHTML_NAMESPACE_HTML);
-    
+    // myhtml_parse_fragment(tree, MyENCODING_UTF_8, res.html, res.size, MyHTML_TAG_DIV, MyHTML_NAMESPACE_HTML);
+    myhtml_parse_fragment(tree, MyENCODING_UTF_8, res.html, res.size, MyHTML_TAG__UNDEF, MyHTML_NAMESPACE_XML);
+
     // print fragment
-    myhtml_serialization_tree_callback(myhtml_tree_get_document(tree), serialization_callback, NULL);
-    
+    // myhtml_serialization_tree_callback(myhtml_tree_get_document(tree), serialization_callback, NULL);
+    myhtml_serialization_tree_callback(myhtml_tree_get_node_html(tree), serialization_callback, NULL);
+    // myhtml_serialization_tree_callback(tree->fragment, serialization_callback, NULL);
+
     // release resources
     myhtml_tree_destroy(tree);
     myhtml_destroy(myhtml);
